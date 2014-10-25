@@ -33,7 +33,7 @@ makeCacheMatrix <- function(x = matrix()) {
          getinverse = getinverse)
 }
 
-cacheSolve <- function(x, ...) {
+cacheSolve <- function(x, DEBUG=FALSE, ...) {
     # Receives a cached metrix produced with the makeCachedMatrix builder
     # Function. It retrives the cached inverse of the matrix 'x'.  
     #
@@ -43,49 +43,72 @@ cacheSolve <- function(x, ...) {
     # Else it returns the cached inverse
     #
     # Args:
-    #   x:  a cached metrix, which can store its inverse
+    #   x:      a cached metrix, which can store its inverse
+    #   DEBUG:  a boolean/logical which enables the wrapping of extra info when
+    #           executin a value.
     #
     # Returns: 
-    #   The inverse of the matrix 'x'
+    #   The inverse of the matrix 'x'. If DEBUG == FALSE
+    #   A list containing the inverse of the matrix 'x' and a logical which 
+    #   will be true if the cached is accessed else false. If DEBUG == TRUE
+    
+    myReturn <- function(inv, isCached) {
+        # If in debug mode myReturn function return extra information in the
+        # form of list, where the first item is the inverse matrix and the
+        # second is a boolean letting me know if we have accedd the cached
+        # inverse matrix.
+        if(DEBUG == TRUE) {
+            return(list(inv=inv, isCached=isCached))
+        }
+        return(inv)
+    }
     
     # Check for cached result and return the cached inverse if available 
     inv <- x$getinverse() 
-    if(!is.null(inv)) {
-        message("getting cached data")
-        return(inv)
+    if(!is.null(inv)) {   
+        return(myReturn(inv, TRUE))
     }
     
     # Calculate the inverse and store it for future reference
     data <- x$get()
     inv <- solve(data)
     x$setinverse(inv)
-   
-    ## Return the inverse of 'x'
-    inv
+    
+    # Return the inverse of 'x'
+    return(myReturn(inv, FALSE))
 }
 
-
 testAssignment2 <- function () {
-    # A function to test the 
+    # A function to tests the interaction between the cachedMatrix and the
+    # cacheSolve function. An NxN matrix is used as the test subject. We then
+    # proceed to validate and verify the expected behaviour of these two 
+    # functions.
+    
     A <- matrix( c(2, 4, 3, 1, 5, 7, 2, 1, 3), nrow=3, ncol=3, byrow = TRUE)
     A_inverse = solve(A)
     A_cached = makeCacheMatrix(A)
     
+    #function to pull the address of an object in R
+    address = function(x) substring(capture.output(.Internal(inspect(x)))[1],2,17)
+    
     message("Test: Matrix is stored in cachedMatrix:", 
-            all(A == A_cached$get()))
+            identical(A, A_cached$get()))
     
     message("\nTest: Inverse is not cached when we first set a matrix:",
-            all(is.null(A_cached$getinverse())))
+            is.null(A_cached$getinverse()))
         
     message("\nTest on first call to cacheSolve.") 
     message("\tShould solve matrix:",
-            all(A_inverse == cacheSolve(A_cached)))
+            identical(A_inverse, cacheSolve(A_cached)))
     message("\tShould store inverse to cache:",
-            all(A_inverse == A_cached$getinverse()))
+            identical(A_inverse, A_cached$getinverse()))
     
     message("\nTest: on second call to cacheSolve.")
-    message("Should retreive inverse metrix from the cache.")
-    ls()
-    #ls(environment(A_cached))
-    #print(cacheSolve(A_cached))
+    result = cacheSolve(A_cached, DEBUG=TRUE)
+    
+    message("\tShould retreive inverse metrix from the cache:",
+            result$isCached)
+    
+    message("\tInverse should be still logically the same:",
+        identical(result$inv, A_inverse))
 }
