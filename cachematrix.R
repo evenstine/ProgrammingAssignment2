@@ -1,5 +1,21 @@
-## Put comments here that give an overall description of what your
-## functions do
+## Assignemnt 2: R Programming
+##
+## Author: Juan Esteban Monsalve Tobon (juanestebanmt@gmail.com)
+##
+## Description: 
+##
+## Here in are a set of functions which support the creation of a cached matrix
+## which stores its inverse after it has been needed for the first time. And in
+## future reuse to use the cached value. 
+##
+## Functions:
+##  makeCacheMatris(x): Handles the creation, storage, and access for a cached
+##                      matrix. And re-use of the environment with a new matrix.
+##
+##  cacheSolve(x):      Returns the inverse of a cached matrix. re-uses the
+##                      the cache if avaliable otherwise sets it.
+##
+##  tests():            Sets of test to validate the functions above.
 
 makeCacheMatrix <- function(x = matrix()) {
     # A builder function which constructs an environment in which to store a 
@@ -15,7 +31,7 @@ makeCacheMatrix <- function(x = matrix()) {
     
     inv <- NULL ## variable to store the inverse (inv)
     
-    ## to store a matrix into cache
+    ## Set a new matrix and clear the cache.
     set <- function(y) {
         x <<- y
         inv <<- NULL
@@ -78,7 +94,7 @@ cacheSolve <- function(x, DEBUG=FALSE, ...) {
     return(myReturn(inv, FALSE))
 }
 
-testAssignment2 <- function () {
+tests <- function () {
     # A function to tests the interaction between the cachedMatrix and the
     # cacheSolve function. An NxN matrix is used as the test subject. We then
     # proceed to validate and verify the expected behaviour of these two 
@@ -97,13 +113,13 @@ testAssignment2 <- function () {
     message("\nTest: Inverse is not cached when we first set a matrix:",
             is.null(A_cached$getinverse()))
         
-    message("\nTest on first call to cacheSolve.") 
+    message("\nTest on first call to cacheSolve:") 
     message("\tShould solve matrix:",
             identical(A_inverse, cacheSolve(A_cached)))
     message("\tShould store inverse to cache:",
             identical(A_inverse, A_cached$getinverse()))
     
-    message("\nTest: on second call to cacheSolve.")
+    message("\nTest: on second call to cacheSolve:")
     result = cacheSolve(A_cached, DEBUG=TRUE)
     
     message("\tShould retreive inverse metrix from the cache:",
